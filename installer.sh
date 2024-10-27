@@ -899,7 +899,7 @@ exec_pacstrap_core() {
         # https://wiki.archlinux.org/title/Mkinitcpio#Common_hooks
         # https://wiki.archlinux.org/title/Microcode#mkinitcpio
         [ "$ARCH_OS_ENCRYPTION_ENABLED" = "true" ] && sed -i "s/^HOOKS=(.*)$/HOOKS=(base systemd keyboard autodetect microcode modconf sd-vconsole block sd-encrypt filesystems fsck)/" /mnt/etc/mkinitcpio.conf
-        [ "$ARCH_OS_ENCRYPTION_ENABLED" = "false" ] && sed -i "s/^HOOKS=(.*)$/HOOKS=(base systemd keyboard autodetect microcode modconf sd-vconsole block filesystems fsck)/" /mnt/etc/mkinitcpio.conf
+        [ "$ARCH_OS_ENCRYPTION_ENABLED" = "false" ] && sed -i "s/^HOOKS=(.*)$/HOOKS=(base systemd keyboard autodetect microcode modconf sd-vconsole block filesystems btrfs fsck)/" /mnt/etc/mkinitcpio.conf
         arch-chroot /mnt mkinitcpio -P
 
         # Install Bootloader to /boot (systemdboot)
