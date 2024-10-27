@@ -824,10 +824,9 @@ exec_prepare_disk() {
         cd
         umount /mnt
         mount -o noatime,compress=zstd,space_cache=v2,subvol=@ "$ARCH_OS_ROOT_PARTITION" /mnt
-        mkdir -p /mnt/{boot,home,.snapshots,swap}
+        mkdir -p /mnt/{boot,home,.snapshots}
         mount -o noatime,compress=zstd,space_cache=v2,subvol=@home "$ARCH_OS_ROOT_PARTITION" /mnt/home
         mount -o noatime,compress=zstd,space_cache=v2,subvol=@snapshots "$ARCH_OS_ROOT_PARTITION" /mnt/.snapshots
-        mount -o noatime,subvol=@swap "$ARCH_OS_ROOT_PARTITION" /mnt/swap
         mount -v "$ARCH_OS_BOOT_PARTITION" /mnt/boot
 
         # Return
