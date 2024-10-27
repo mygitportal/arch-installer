@@ -810,12 +810,24 @@ exec_prepare_disk() {
         # Format disk
         mkfs.fat -F 32 -n BOOT "$ARCH_OS_BOOT_PARTITION"
         [ "$ARCH_OS_ENCRYPTION_ENABLED" = "true" ] && mkfs.ext4 -F -L ROOT /dev/mapper/cryptroot
-        [ "$ARCH_OS_ENCRYPTION_ENABLED" = "false" ] && mkfs.ext4 -F -L ROOT "$ARCH_OS_ROOT_PARTITION"
+        [ "$ARCH_OS_ENCRYPTION_ENABLED" = "false" ] && mkfs.btrfs -L ROOT "$ARCH_OS_ROOT_PARTITION"
 
         # Mount disk to /mnt
         [ "$ARCH_OS_ENCRYPTION_ENABLED" = "true" ] && mount -v /dev/mapper/cryptroot /mnt
         [ "$ARCH_OS_ENCRYPTION_ENABLED" = "false" ] && mount -v "$ARCH_OS_ROOT_PARTITION" /mnt
-        mkdir -p /mnt/boot
+        cd /mnt 
+        btrfs subvolume create @
+        btrfs subvolume create @home
+        btrfs subvolume create @snapshots
+        btrfs subvolume create @swap
+
+        cd
+        umount /mnt
+        mount -o noatime,compress=zstd,space_cache=v2,subvol=@ "$ARCH_OS_ROOT_PARTITION" /mnt
+        mkdir -p /mnt/{boot,home,.snapshots,swap}
+        mount -o noatime,compress=zstd,space_cache=v2,subvol=@home "$ARCH_OS_ROOT_PARTITION" /mnt/home
+        mount -o noatime,compress=zstd,space_cache=v2,subvol=@snapshots "$ARCH_OS_ROOT_PARTITION" /mnt/.snapshots
+        mount -o noatime,subvol=@swap "$ARCH_OS_ROOT_PARTITION" /mnt/swap
         mount -v "$ARCH_OS_BOOT_PARTITION" /mnt/boot
 
         # Return
