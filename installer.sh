@@ -1269,7 +1269,7 @@ exec_install_graphics_driver() {
                 local packages=(vulkan-intel vkd3d libva-intel-driver)
                 [ "$ARCH_OS_MULTILIB_ENABLED" = "true" ] && packages+=(lib32-vulkan-intel lib32-vkd3d lib32-libva-intel-driver)
                 chroot_pacman_install "${packages[@]}"
-                sed -i "s/^MODULES=(.*)/MODULES=(i915)/g" /mnt/etc/mkinitcpio.conf
+                sed -i "s/^MODULES=(.*)/MODULES=(i915 btrfs)/g" /mnt/etc/mkinitcpio.conf
                 arch-chroot /mnt mkinitcpio -P
                 ;;
             "nvidia") # https://wiki.archlinux.org/title/NVIDIA#Installation
