@@ -824,9 +824,10 @@ exec_prepare_disk() {
         cd
         umount /mnt
         mount -o noatime,compress=zstd,space_cache=v2,subvol=@ "$ARCH_OS_ROOT_PARTITION" /mnt
-        mkdir -p /mnt/{boot,home,.snapshots}
+        mkdir -p /mnt/{boot,home,.snapshots,swap}
         mount -o noatime,compress=zstd,space_cache=v2,subvol=@home "$ARCH_OS_ROOT_PARTITION" /mnt/home
         mount -o noatime,compress=zstd,space_cache=v2,subvol=@snapshots "$ARCH_OS_ROOT_PARTITION" /mnt/.snapshots
+        mount -o noatime,compress=zstd,space_cache=v2,subvol=@swap "$ARCH_OS_ROOT_PARTITION" /mnt/swap
         mount -v "$ARCH_OS_BOOT_PARTITION" /mnt/boot
 
         # Return
@@ -844,7 +845,7 @@ exec_pacstrap_core() {
         [ "$DEBUG" = "true" ] && sleep 1 && process_return 0 # If debug mode then return
 
         # Core packages
-        local packages=("$ARCH_OS_KERNEL" base sudo linux-firmware zram-generator networkmanager)
+        local packages=("$ARCH_OS_KERNEL" base sudo base-devel linux-firmware zram-generator networkmanager)
 
         # Add microcode package
         [ -n "$ARCH_OS_MICROCODE" ] && [ "$ARCH_OS_MICROCODE" != "none" ] && packages+=("$ARCH_OS_MICROCODE")
@@ -898,7 +899,8 @@ exec_pacstrap_core() {
         # https://wiki.archlinux.org/title/Mkinitcpio#Common_hooks
         # https://wiki.archlinux.org/title/Microcode#mkinitcpio
         [ "$ARCH_OS_ENCRYPTION_ENABLED" = "true" ] && sed -i "s/^HOOKS=(.*)$/HOOKS=(base systemd keyboard autodetect microcode modconf sd-vconsole block sd-encrypt filesystems fsck)/" /mnt/etc/mkinitcpio.conf
-        [ "$ARCH_OS_ENCRYPTION_ENABLED" = "false" ] && sed -i "s/^HOOKS=(.*)$/HOOKS=(base systemd keyboard autodetect microcode modconf sd-vconsole block filesystems btrfs fsck)/" /mnt/etc/mkinitcpio.conf
+        [ "$ARCH_OS_ENCRYPTION_ENABLED" = "false" ] && sed -i "s/^HOOKS=(.*)$/HOOKS=(base systemd keyboard autodetect microcode modconf sd-vconsole block filesystems fsck)/" /mnt/etc/mkinitcpio.conf
+         sed -i "s/^MODULES=(.*)/MODULES=(i915 btrfs)/g" /mnt/etc/mkinitcpio.conf
         arch-chroot /mnt mkinitcpio -P
 
         # Install Bootloader to /boot (systemdboot)
